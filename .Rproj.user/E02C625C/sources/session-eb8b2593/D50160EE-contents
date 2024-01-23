@@ -1,0 +1,7 @@
+attach(TempiLunghezzeNaiive)
+plot(lunghezzaS,tempo)
+abline(lm(data = TempiLunghezzeNaiive, tempo ~ lunghezzaS), col = "red")
+detach(TempiLunghezzeNaiive)
+attach(TempiLunghezzeSmart)
+plot(lunghezzaS,tempo)
+abline(lm(data = TempiLunghezzeSmart, tempo ~ lunghezzaS), col = "red")

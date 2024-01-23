@@ -1,0 +1,209 @@
+library("dplyr")
+library("tidyverse")
+library("fmsb")
+library("RColorBrewer")
+library("plotrix")
+####```{r}```
+
+#1) relazione tra numero di titoli e piattaforma (quanti giochi
+#per ogni piattaorma sono stati prodotti
+#qual è la piattaforma per la quale sono stati prodotti piu giochi?)
+
+#creo "platforms" che seleziona la tabella con le piattaforme
+
+platforms <- vgsales %>%
+           select(Platform)
+platforms
+#conto quanti giochi ci sono per ogni piattaforma
+#creo l'oggetto primoPunto che è la tabella che contiene i dati per l'istogramma 
+PrimoPunto<-platforms %>%
+            group_by(Platform) %>%
+            mutate(numberOf = n()) %>%
+            distinct()
+
+##genero l'istogramma 
+ggplot(PrimoPunto,aes(x = reorder(Platform, -numberOf), y=numberOf)) + geom_bar(stat = 'identity')+xlab("Platform")+ylab("Number of titles")+ggtitle("Titles produced for every platform")
+
+#############################################################################################
+#2)flusso di produzione dei titoli per le PRINCIPALI piattaforme ogni anno, grafico multilinea.
+
+#seleziono i dati occorrenti: colonna piattaforma,anno, e conto quanti sono i titoli prodotti per ogni piattaforma ogni anno 
+
+DS_year <- vgsales %>%
+           select(Platform,Year)%>%
+           group_by(Year) %>%
+           filter(Platform == "DS")%>%
+           summarise(DS = n())
+           
+
+PS2_year <- vgsales %>%
+            select(Platform,Year)%>%
+            group_by(Year)%>%
+            filter(Platform == "PS2") %>%
+            summarise(PS2 = n())
+
+
+PS3_year <- vgsales %>%
+            select(Platform,Year)%>%
+            group_by(Year)%>%
+            filter(Platform == "PS3")%>%
+            summarise(PS3 = n())
+
+Wii_year <- vgsales %>%
+            select(Platform,Year)%>%
+            group_by(Year)%>%
+            filter(Platform == "Wii")%>%
+            summarise(Wii = n())
+
+X360_year <- vgsales %>%
+            select(Platform,Year)%>%
+            group_by(Year)%>%
+            filter(Platform == "X360")%>%
+            summarise(X360 = n())
+
+per_year <- data.frame("year" = years)
+
+#genero il data frame che conta quanti titoli all'anno sono stati prodotti
+years <- vgsales%>%
+         select(Year)%>%
+         distinct()
+anno <- years[order(as.integer(years$Year),decreasing = FALSE), ]
+per_year <- full_join(anno,DS_year)%>%
+            full_join(PS2_year)%>%
+            full_join(PS3_year)%>%
+            full_join(Wii_year)%>%
+            full_join(X360_year)%>%
+            head(-1)%>%
+            tail(-20)
+#genero il grafico multilinea
+ggplot(per_year, aes(x = Year,group = 1)) + 
+  geom_point(aes(y = DS), colour = "red") + 
+  geom_line(aes(y = DS), colour = "red") + 
+  geom_point(aes(y = PS2), colour = "blue") + 
+  geom_line(aes(y = PS2) ,colour = "blue")+ 
+  geom_point(aes(y = PS3), colour = "green") + 
+  geom_line(aes(y = PS3), colour = "green")+ 
+  geom_point(aes(y = Wii), colour = "yellow") + 
+  geom_line(aes(y = Wii), colour = "yellow")+ 
+  geom_point(aes(y = X360), colour = "black") + 
+  geom_line(aes(y = X360), colour = "black")+
+  labs(x= "Year",y= "Number of titles per year")
+             
+##############################################################################################
+#3)quali sono i generi che vengono prodotti maggiormente?(3.1) e per ogni casa produttrice(selezionerò le più famose)quali sono i generi che sono più prodotti? 
+vgsales %>%
+  select(Genre)%>%
+  group_by(Genre) %>%
+  mutate(numberOf = n()) %>%
+  distinct()%>%
+  ggplot(aes(reorder(Genre, -numberOf),numberOf)) + geom_bar(stat = 'identity')+xlab("Genre")+ylab("Number of titles")+ggtitle("Genre of titles globally")
+
+  
+#3.1)i generi che sono più prodotti per ogni casa selezionata 
+vgsales %>%
+  filter(Publisher =="Nintendo")%>%
+  select(Publisher,Genre)%>%
+  group_by(Genre) %>%
+  mutate(numberOf = n()) %>%
+  distinct()%>%
+  ggplot(aes(x =Genre, y=numberOf)) + geom_bar(stat = 'identity')+xlab("Genre")+ylab("Number of titles")+ggtitle("Genre of titles of Nintendo")
+
+
+vgsales %>%
+  filter(Publisher =="Activision")%>%
+  select(Publisher,Genre)%>%
+  group_by(Genre) %>%
+  mutate(numberOf = n()) %>%
+  distinct()%>%
+  ggplot(aes(x = Genre, y=numberOf)) + geom_bar(stat = 'identity')+xlab("Genre")+ylab("Number of titles")+ggtitle("Genre of titles of Activision")
+
+vgsales %>%
+  filter(Publisher =="Electronic Arts")%>%
+  select(Publisher,Genre)%>%
+  group_by(Genre) %>%
+  mutate(numberOf = n()) %>%
+  distinct()%>%
+  ggplot(aes(x = Genre, y=numberOf)) + geom_bar(stat = 'identity')+xlab("Genre")+ylab("Number of titles")+ggtitle("Genre of titles of Electronic Arts")
+
+vgsales %>%
+  filter(Publisher =="Konami Digital Entertainment")%>%
+  select(Publisher,Genre)%>%
+  group_by(Genre) %>%
+  mutate(numberOf = n()) %>%
+  distinct()%>%
+  ggplot(aes(x = Genre, y=numberOf)) + geom_bar(stat = 'identity')+xlab("Genre")+ylab("Number of titles")+ggtitle("Genre of titles of Konami Digital Entertainment")
+
+vgsales %>%
+  filter(Publisher =="Namco Bandai Games")%>%
+  select(Publisher,Genre)%>%
+  group_by(Genre) %>%
+  mutate(numberOf = n()) %>%
+  distinct()%>%
+  ggplot(aes(x = Genre, y=numberOf)) + geom_bar(stat = 'identity')+xlab("Genre")+ylab("Number of titles")+ggtitle("Genre of titles of Namco Bandai Games")
+
+##############################################################################################
+##4)quali sono i generi più venduti? e quali sono i generi più venduti nei 3 stati presi in considerazione dal dataset?
+
+vgsales %>%
+  select(Genre,Global_Sales)%>%
+  group_by(Genre)%>%
+  summarise(total_sales = sum(Global_Sales))%>%
+  ggplot(aes(x=Genre, y=total_sales,fill = Genre)) + geom_bar(stat = 'identity')+xlab("Genre")+ylab("Millions of $ of titles saleld")+ggtitle("Total sales per Genre")
+
+cont_sales<-vgsales%>%
+  select(Genre,NA_Sales,EU_Sales,JP_Sales)%>%
+  group_by(Genre)
+
+  ggplot(cont_sales,aes(Genre,NA_Sales,fill="")) + geom_bar(stat = 'identity') +scale_fill_manual(values=c("#FF6666"))+ggtitle("Nord America Sales per Genre")
+  ggplot(cont_sales,aes(Genre,EU_Sales,fill="")) + geom_bar(stat = 'identity') +scale_fill_manual(values=c("#1BFF1B"))+ggtitle("Europe Sales per Genre")
+  ggplot(cont_sales,aes(Genre,JP_Sales,fill="")) + geom_bar(stat = 'identity') +scale_fill_manual(values=c("#0C56C6"))+ggtitle("Japan Sales per Genre")
+
+##5)piattaforma->vendite  ,  quali sono le piattaforme che hanno venduto più titoli
+  
+  vgsales%>%
+    select(Platform,Global_Sales)%>%
+    group_by(Platform)%>%
+    summarise(total_sells = sum(Global_Sales))%>%
+    ggplot(aes(Platform,total_sells,fill=total_sells)) + geom_bar(stat = 'identity')+labs(x="Platforms",y="M$ of sells")+ggtitle("best sales by platform")
+  
+##6)vendite totali-> sviluppatore ,  quali sono le principali case sviluppatrici , o comunque quali sono quelle che vendono di più
+  
+  vgsales%>%
+    select(Publisher,Global_Sales)%>%
+    group_by(Publisher)%>%
+    summarise(total_sales = sum(Global_Sales))%>%
+    subset(total_sales > 50.0)%>%
+    ggplot(aes(Publisher,total_sales,fill=total_sales)) + geom_bar(stat = 'identity') +labs(x="Publishers",y="M$ of sells")+coord_flip()+ggtitle("best sales by Publisher")
+
+##7)vendite continenti -> sviluppatore (Nintendo,Activision,Electronic Arts,Konami,Digital Entertainment,Namco Bandai Games)
+  
+  sv_sales <-vgsales%>%
+              select(Publisher,NA_Sales,EU_Sales,JP_Sales)%>%
+              rowwise() %>% 
+              mutate(max_sells = max(NA_Sales,EU_Sales,JP_Sales))%>%
+              mutate()
+  sv_sales$continent <- "Nord_America"
+  sv_sales[sv_sales$max_sells==sv_sales$NA_Sales,]$continent <- "Nord_America" 
+  sv_sales[sv_sales$max_sells==sv_sales$EU_Sales,]$continent <- "Europe" 
+  sv_sales[sv_sales$max_sells==sv_sales$JP_Sales,]$continent <- "Japan"  
+  sv_sales%>%
+    select(Publisher,max_sells,continent)
+  
+  agg_sv <- aggregate(sv_sales$max_sells ~ sv_sales$Publisher + sv_sales$continent ,data = sv_sales ,sum)
+  
+  colnames(agg_sv) <-c( 'Publisher','continent','max_sells' )
+  agg_sv %>%
+     filter(Publisher =="Nintendo"   |
+            Publisher =="Activision" |
+            Publisher =="Electronic Arts" |
+            Publisher =="Konami Digital Entertainment" |
+            Publisher =="Namco Bandai Games"
+            ) %>%
+     ggplot(aes(fill=continent, y=max_sells, x=Publisher)) + 
+    geom_bar(position="dodge", stat="identity")+
+    ggtitle("M$ of sales per Publisher")
+      
+
+
+
+
